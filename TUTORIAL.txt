@@ -1,0 +1,14 @@
+####################
+# Add a local repo #
+####################
+
+- Create osre/repo
+- Deploy artifact:
+    mvn deploy:deploy-file -Durl=file:./repo -Dfile=../ntrureencrypt/target/ntrureencrypt-1.0.1.jar -DgroupId=nics.crypto.ntrureencrypt -DartifactId=ntrureencrypt -Dpackaging=jar -Dversion=1.0.1
+
+#######################
+# Compile and execute #
+#######################
+
+- Compile and execute main class (without building a package)
+    mvn compile exec:java -Dexec.mainClass="nics.crypto.osre.App" -Dexec.args="1 2"

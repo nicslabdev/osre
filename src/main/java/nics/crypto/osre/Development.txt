@@ -1,0 +1,30 @@
+# Applications #
+
+- MainOwner.java
+    Samples the (pk_D, sk_D) pair, receives the {pk_Hi} set, derives the {rk_Hi} set, sends pk_D to the device, sends {rk_Hi} to the proxy
+
+- MainDevice.java
+    Receives pk_D from the owner, samples a message from Fp, encrypts it with NTRU and sends it to the proxy
+
+- MainProxy.java
+    Receives a ciphertext from the device, receives the set {rk_Hi} from the owner, performs OSRE, sends {c_Hi} to each H_i
+
+- MainHolder.java
+    Generates the (pk_Hi, sk_Hi) pair, sends pk_Hi to the owner
+
+# Application execution commands #
+
+mvn clean compile exec:java -Dexec.mainClass="nics.crypto.osre.TLSServer" -e
+mvn clean compile exec:java -Dexec.mainClass="nics.crypto.osre.TLSClient" -e
+
+# TLS #
+
+- Create Server Key Store
+    keytool -genkeypair -alias server -keyalg RSA -keysize 2048 -keystore server.keystore -validity 3650
+
+- Export Server Certificate
+    keytool -export -alias server -file server.crt -keystore server.keystore
+
+- Create Client Trust Store and Import Server Certificate
+    keytool -import -alias server -file server.crt -keystore client.truststore
+
