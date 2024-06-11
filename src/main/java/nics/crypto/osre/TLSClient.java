@@ -62,7 +62,7 @@ public class TLSClient {
         //writer.newLine();
         //writer.flush();
 
-        logger.info("Data sent to server: " + Arrays.toString(data));
+        logger.info("Data sent to server: " + data.length + " B");
 
         sslSocket.close();
 

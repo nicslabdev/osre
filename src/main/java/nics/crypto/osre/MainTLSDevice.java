@@ -1,6 +1,7 @@
 package nics.crypto.osre;
 
 import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Random;
 
@@ -23,10 +24,12 @@ public class MainTLSDevice {
         int port = 8443;
         String truststorePath = "certs/client.truststore";
         String password = "password";
+        int N = 1;
 
-        if(args.length == 2) {
+        if(args.length == 3) {
             hostname = args[0];
             port = Integer.parseInt(args[1]);
+            N = Integer.parseInt(args[2]);
         }
 
         logger.info("Starting device...");
@@ -34,12 +37,18 @@ public class MainTLSDevice {
         NTRUReEncrypt ntruReEnc = new NTRUReEncrypt(EncryptionParameters.EES1087EP2_FAST);
         EncryptionKeyPair kpA = ntruReEnc.generateKeyPair();
         int mLen = 128;
-        Random rng = new Random(12345);
+        SecureRandom rng = new SecureRandom();
         BigInteger m1_bi = new BigInteger(mLen, rng);
 
         logger.info("Data to send: " + m1_bi.toString());
 
-        TLSClient client = new TLSClient(hostname, port, truststorePath, password);
-        client.connectAndSend(m1_bi.toByteArray());
+        long startCount = System.currentTimeMillis();
+        for(int i = 0; i < N; i++) {
+            int iterPort = port + i;
+            TLSClient client = new TLSClient(hostname, iterPort, truststorePath, password);
+            client.connectAndSend(m1_bi.toByteArray());
+        }
+        long endCount = System.currentTimeMillis();
+        logger.info("Execution time: " + (endCount - startCount) + " milliseconds");
     }
 }

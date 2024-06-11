@@ -58,9 +58,9 @@ public class TLSServer {
         InputStream byteReader = sslSocket.getInputStream();
 
         byte[] res = new byte[17];
-        byteReader.read(res);
+        int length = byteReader.read(res);
 
-        logger.info("Received data: " + Arrays.toString(res));
+        logger.info("Received data from client: " + length + " B");
 
             /*
             // Read and echo the input back to the client

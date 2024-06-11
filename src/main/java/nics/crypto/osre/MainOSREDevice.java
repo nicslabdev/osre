@@ -24,6 +24,8 @@ public class MainOSREDevice {
 
     public static void main(String[] args) throws Exception, IOException {
 
+        long startTime = System.currentTimeMillis();
+
         SecureRandom sRNG = new SecureRandom();
 
         // Generate a message
@@ -36,7 +38,8 @@ public class MainOSREDevice {
 
         // Init encryptor and keys
         String paramSpecs = "EES1087EP2_FAST";
-        NTRUReEncrypt ntruReEncrypt = new NTRUReEncrypt(NTRUReEncryptParams.getParams(paramSpecs));
+        EncryptionParameters params = NTRUReEncryptParams.getParams(paramSpecs);
+        NTRUReEncrypt ntruReEncrypt = new NTRUReEncrypt(params);
         EncryptionKeyPair deviceKeyPair = ntruReEncrypt.generateKeyPair();
 
         // Send public key to the proxy
@@ -78,6 +81,10 @@ public class MainOSREDevice {
         socketClient.connectAndSend(rkHolder1.getEncoded());
         socketClient.connectAndSend(rkHolder2.getEncoded());
         logger.info("ReEncryption keys sent to the proxy.");
+
+        long endTime = System.currentTimeMillis();
+        logger.info("Starting time: " + startTime);
+        logger.info("Final time: " + endTime);
 
     }
 
