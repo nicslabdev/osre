@@ -22,25 +22,37 @@ public class MainOSREProxy {
 
     public static void main(String[] args) throws Exception {
 
+        if(args.length < 2) {
+            throw new Exception("Less than 2 arguments provided. The correct format is (N, port)");
+        }
+
+        logger.info("Starting MainOSREProxy...");
+
+        // Init variables
+        int N = Integer.parseInt(args[0]);
+        int port = Integer.parseInt(args[1]);
+        SocketServer socketServer = new SocketServer(port);
+        SecureRandom sRNG = new SecureRandom();
+
         // Init encryptor
         String paramSpecs = "EES1087EP2_FAST";
         EncryptionParameters params = NTRUReEncryptParams.getParams(paramSpecs);
         NTRUReEncrypt ntruReEncrypt = new NTRUReEncrypt(params);
 
-        // Receive the public key of the Device
-        int port = 5555;
-        SocketServer socketServer = new SocketServer(port);
-        byte[] encodedPublicKey = socketServer.acceptAndReceive();
-        EncryptionPublicKey devicePublicKey = new EncryptionPublicKey(encodedPublicKey);
-        logger.info("Public key received from the device.");
-        
+        // Receive PublicKey from Device
+        EncryptionPublicKey devicePublicKey = new EncryptionPublicKey(socketServer.acceptAndReceive());
+        logger.info("Public key received from the device");
+
         // Receive a single ciphertext from the Device
         byte[] encodedEncryptedMessage = socketServer.acceptAndReceive();
         IntegerPolynomial encryptedMessage = IntegerPolynomial.fromBinary(
             encodedEncryptedMessage,
             params.N,
             params.q);
-        logger.info("Ciphertext received from the device.");
+        logger.info("Ciphertext received from the device");
+
+        //////////////////////////////////////
+        /*
 
         // Receive the keys of the Holders
         byte[] encodedHolderKey1 = socketServer.acceptAndReceive();
@@ -76,6 +88,7 @@ public class MainOSREProxy {
         SocketClient socketClient2 = new SocketClient("localhost", 7002);
         socketClient2.connectAndSend(encryptedShareHolder2.toBinary(params.q));
         logger.info("Encrypted shares sent to the holders.");
+        */
 
         /*
         //// OSRE //////////

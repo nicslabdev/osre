@@ -57,33 +57,29 @@ public class TestBlindingProtocol {
         IntegerPolynomial fA = ntruReEncrypt.privatePolynomial(keyPairA.getPrivate());
         IntegerPolynomial fB = ntruReEncrypt.privatePolynomial(keyPairB.getPrivate());
 
-        //logger.info(Arrays.toString(fA.coeffs));
-        //logger.info(Arrays.toString(fB.coeffs));
+        // Blinding protocol to derive RK
+        IntegerPolynomial r = ntruReEncrypt.sampleBlinding(sRNG);
 
-        // PROBLEM: The values inside privateKey are not accessible from the outside
-        //logger.info(Arrays.toString(keyPairB.getPrivate().fp.coeffs));
-
-        IntegerPolynomial r = new IntegerPolynomial(params.N);
-        for(int i = 0; i < params.N; i++) {
-            r.coeffs[i] = sRNG.nextInt(params.q);
-        }
-        //logger.info(Arrays.toString(r.coeffs));
-
-        IntegerPolynomial rA = r.toIntegerPolynomial().mult(fA, params.q);
+        //IntegerPolynomial rA = r.clone().mult(fA, params.q);
+        IntegerPolynomial rA = ntruReEncrypt.blindPrivateKey(r, keyPairA.getPrivate());
         //logger.info(Arrays.toString(rA.coeffs));
 
-        IntegerPolynomial rABinv = rA.toIntegerPolynomial().mult(fB.invertFq(params.q), params.q);
+        //IntegerPolynomial rABinv = rA.clone().mult(fB.invertFq(params.q), params.q);
+        IntegerPolynomial rABinv = ntruReEncrypt.blindInversePrivateKey(rA, keyPairB.getPrivate());
         //logger.info(Arrays.toString(rABinv.coeffs));
 
-        IntegerPolynomial rinv = r.toIntegerPolynomial().invertFq(params.q);
-        //IntegerPolynomial one = rinv.toIntegerPolynomial().mult(r, params.q);
-        //logger.info(Arrays.toString(rinv.coeffs));
-        //logger.info(Arrays.toString(rinv.mult(r, params.q).coeffs));
-        IntegerPolynomial ABinv = rABinv.mult(r.toIntegerPolynomial().invertFq(params.q), params.q);
+        //IntegerPolynomial rinv = r.clone().invertFq(params.q);
+        //IntegerPolynomial ABinv = rABinv.mult(rinv, params.q);
+        IntegerPolynomial ABinv = ntruReEncrypt.extractBlinding(r, rABinv);
         //ABinv.modCenter(params.q);
-        logger.info(Arrays.toString(ABinv.coeffs));
+        //logger.info(Arrays.toString(ABinv.coeffs));
 
-        ReEncryptionKey rk = new ReEncryptionKey(ABinv, params.q);
+        ReEncryptionKey rk = new ReEncryptionKey(ABinv.coeffs, params.q);
+        IntegerPolynomial newCiphertext = ntruReEncrypt.reEncrypt(rk, polyCiphertext, SecureRandom.getSeed(64));
+        IntegerPolynomial result = ntruReEncrypt.decrypt(keyPairB.getPrivate(), newCiphertext);
+        //logger.info(Arrays.toString(result.coeffs));
+        BigInteger checkResult = ntruReEncrypt.decodeMessagetoBigInteger(result, numBits);
+        logger.info(checkResult.toString());
 
     }
 

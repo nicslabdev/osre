@@ -12,3 +12,20 @@
 
 - Compile and execute main class (without building a package)
     mvn compile exec:java -Dexec.mainClass="nics.crypto.osre.App" -Dexec.args="1 2"
+
+- Compile as a package
+    mvn clean package
+
+- Execute with java
+    java -cp /app/resources/ntru-1.2.jar:/app/resources/ntrureencrypt-1.0.1.jar:/app/osre-1.0.1.jar nics.crypto.osre.TestBlindingProtocol
+
+##########
+# Docker #
+##########
+
+- To build and run the container
+    docker build -t test-blinding .
+    docker run --rm test-blinding
+
+- To debug the container contents
+    docker run --rm -it --entrypoint sh test-blinding

@@ -24,32 +24,37 @@ public class MainOSREDevice {
 
     public static void main(String[] args) throws Exception, IOException {
 
-        long startTime = System.currentTimeMillis();
+        if(args.length < 2) {
+            throw new Exception("Less than 2 arguments provided. The correct format is (N, port).");
+        }
 
+        logger.info("Starting MainOSREDevice...");
+
+        // Init variables
+        int N = Integer.parseInt(args[0]);
+        int port = Integer.parseInt(args[1]);
+        SocketServer socketServer = new SocketServer(port);
         SecureRandom sRNG = new SecureRandom();
 
-        // Generate a message
-        //int numBits = 128;
-        int numBits = 8;
-        //BigInteger prime = new BigInteger("66333221577766244971668217470771604112433242586277759383795847128687502424749");
-        BigInteger prime = new BigInteger("229");
-        BigInteger m = new BigInteger(numBits, sRNG).mod(prime);
-        logger.info("Secret generated: " + m.toString());
-
-        // Init encryptor and keys
+        // Init encryptor
         String paramSpecs = "EES1087EP2_FAST";
         EncryptionParameters params = NTRUReEncryptParams.getParams(paramSpecs);
         NTRUReEncrypt ntruReEncrypt = new NTRUReEncrypt(params);
-        EncryptionKeyPair deviceKeyPair = ntruReEncrypt.generateKeyPair();
+        
+        // Receive PublicKey from Owner
+        EncryptionPublicKey devicePublicKey = new EncryptionPublicKey(socketServer.acceptAndReceive());
+        logger.info("Public key received from the owner");
 
         // Send public key to the proxy
-        EncryptionPublicKey devicePublicKey = deviceKeyPair.getPublic();
-        byte[] encodedPublicKey = devicePublicKey.getEncoded();
+        SocketClient socketClientToProxy = new SocketClient("osre-proxy", port);
+        socketClientToProxy.connectAndSend(devicePublicKey.getEncoded());
+        logger.info("Public key sent to the proxy");
 
-        int port = 5555;
-        SocketClient socketClient = new SocketClient("localhost", port);
-        socketClient.connectAndSend(encodedPublicKey);
-        logger.info("Public key sent to the proxy.");
+        // Generate a message
+        int numBits = 128;
+        BigInteger prime = new BigInteger("66333221577766244971668217470771604112433242586277759383795847128687502424749");
+        BigInteger m = new BigInteger(numBits, sRNG).mod(prime);
+        logger.info("Secret generated: " + m.toString());
 
         // Encrypt the message and send it to the Proxy
         IntegerPolynomial polyMessage = ntruReEncrypt.encodeMessage(
@@ -58,9 +63,11 @@ public class MainOSREDevice {
             NTRUReEncryptParams.getDM0(paramSpecs)
         );
         IntegerPolynomial polyCiphertext = ntruReEncrypt.encrypt(devicePublicKey, polyMessage, SecureRandom.getSeed(64));
+        socketClientToProxy.connectAndSend(polyCiphertext.toBinary(NTRUReEncryptParams.getParams(paramSpecs).q));
+        logger.info("Ciphertext sent to the proxy");
 
-        socketClient.connectAndSend(polyCiphertext.toBinary(NTRUReEncryptParams.getParams(paramSpecs).q));
-        logger.info("Ciphertext sent to the proxy.");
+        //////////////////////////////////////////////////////////////////////
+        /*
 
         // TODO: modify NtruReEncrypt to derive the re-encryption key with the public key or through an interactive protocol
         // Receive the private keys of the holders
@@ -82,10 +89,7 @@ public class MainOSREDevice {
         socketClient.connectAndSend(rkHolder2.getEncoded());
         logger.info("ReEncryption keys sent to the proxy.");
 
-        long endTime = System.currentTimeMillis();
-        logger.info("Starting time: " + startTime);
-        logger.info("Final time: " + endTime);
-
+        */
     }
 
 }

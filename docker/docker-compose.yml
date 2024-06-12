@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  osre-owner:
+    image: osre-owner
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.owner
+    networks:
+      - mynetwork
+    depends_on:
+      - osre-device
+    ports:
+      - "8080"
+
+  osre-device:
+    image: osre-device
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.device
+    networks:
+      - mynetwork
+    ports:
+      - "8080"
+
+  osre-proxy:
+    image: osre-proxy
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.proxy
+    networks:
+      - mynetwork
+    ports:
+      - "8080"
+
+  osre-holder_1:
+    image: osre-holder
+    container_name: osre-holder_1
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.holder
+    networks:
+      - mynetwork
+    ports:
+      - "8080"
+
+  osre-holder_2:
+    image: osre-holder
+    container_name: osre-holder_2
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.holder
+    networks:
+      - mynetwork
+    ports:
+      - "8080"
+
+  osre-holder_3:
+    image: osre-holder
+    container_name: osre-holder_3
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.holder
+    networks:
+      - mynetwork
+    ports:
+      - "8080"
+
+networks:
+  mynetwork:
+    driver: bridge

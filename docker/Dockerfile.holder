@@ -1,0 +1,26 @@
+FROM maven:3.6.3-openjdk-17 as builder
+WORKDIR /app
+
+# Copy the pom.xml and local JARs
+COPY pom.xml /app
+COPY /resources /app/resources
+
+# Install the local JARs
+RUN mvn install:install-file -Dfile=/app/resources/ntru-1.2.jar -DgroupId=net.sf.ntru -DartifactId=ntru -Dversion=1.2 -Dpackaging=jar
+RUN mvn install:install-file -Dfile=/app/resources/ntrureencrypt-1.0.1.jar -DgroupId=nics.crypto.ntrureencrypt -DartifactId=ntrureencrypt -Dversion=1.0.1 -Dpackaging=jar
+
+# Copy the source code
+COPY /src /app/src
+
+# Package the application
+RUN mvn clean package
+
+FROM openjdk:17
+WORKDIR /app
+
+# Copy the built JAR and dependencies from the builder stage
+COPY --from=builder /app/target/osre-1.0.1.jar /app
+COPY --from=builder /app/resources/ntru-1.2.jar /app/resources/ntru-1.2.jar
+COPY --from=builder /app/resources/ntrureencrypt-1.0.1.jar /app/resources/ntrureencrypt-1.0.1.jar
+
+ENTRYPOINT ["java", "-cp", "/app/resources/ntru-1.2.jar:/app/resources/ntrureencrypt-1.0.1.jar:/app/osre-1.0.1.jar", "nics.crypto.osre.MainOSREHolder", "3", "8080"]
