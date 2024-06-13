@@ -34,16 +34,31 @@ public class MainOSREHolder {
         int port = Integer.parseInt(args[1]);
         SocketServer socketServer = new SocketServer(port);
         SecureRandom sRNG = new SecureRandom();
+        int numBits = 128;
 
-        // Init encryptor
+        // Init encryptor and generate keys
         String paramSpecs = "EES1087EP2_FAST";
         EncryptionParameters params = NTRUReEncryptParams.getParams(paramSpecs);
         NTRUReEncrypt ntruReEncrypt = new NTRUReEncrypt(params);
+        EncryptionKeyPair holderKeyPair = ntruReEncrypt.generateKeyPair();
 
         // Receive blinded key from the owner
         IntegerPolynomial blindedKey = IntegerPolynomial.fromBinary(socketServer.acceptAndReceive(), params.N, params.q);
         logger.info("Blinded key received from the owner");
-        logger.info(Arrays.toString(blindedKey.coeffs));
+
+        // Add the holder secret key factor and send to the proxy (after receiving request)
+        byte[] request = socketServer.acceptAndReceive();
+
+        IntegerPolynomial blindedReEncKey = ntruReEncrypt.blindInversePrivateKey(blindedKey, holderKeyPair.getPrivate());
+        SocketClient socketClientToProxy = new SocketClient("osre-proxy", port);
+        socketClientToProxy.connectAndSend(blindedReEncKey.toBinary(params.q));
+        logger.info("Blinded ReEncKey sent to proxy");
+
+        // Receive encrypted share from the proxy
+        IntegerPolynomial encryptedShare = IntegerPolynomial.fromBinary(socketServer.acceptAndReceive(), params.N, params.q);
+        IntegerPolynomial share = ntruReEncrypt.decrypt(holderKeyPair.getPrivate(), encryptedShare);
+        BigInteger intShare = ntruReEncrypt.decodeMessagetoBigInteger(share, numBits);
+        logger.info("Share received from the proxy: " + intShare.toString());
 
         ///////////////////////////////
         /*

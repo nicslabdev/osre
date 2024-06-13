@@ -2,6 +2,7 @@ package nics.crypto.osre;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
@@ -33,6 +34,7 @@ public class MainOSREProxy {
         int port = Integer.parseInt(args[1]);
         SocketServer socketServer = new SocketServer(port);
         SecureRandom sRNG = new SecureRandom();
+        BigInteger prime = new BigInteger("66333221577766244971668217470771604112433242586277759383795847128687502424749");
 
         // Init encryptor
         String paramSpecs = "EES1087EP2_FAST";
@@ -50,6 +52,41 @@ public class MainOSREProxy {
             params.N,
             params.q);
         logger.info("Ciphertext received from the device");
+
+        // Receive the blinding factor r from the owner
+        byte[] encodedBlinding = socketServer.acceptAndReceive();
+        IntegerPolynomial r = IntegerPolynomial.fromBinary(
+            encodedBlinding,
+            params.N,
+            params.q);
+        logger.info("Blinding factor r received from the owner");
+
+        // Receive the blinded key from each holder (pull request)
+        ArrayList<ReEncryptionKey> reEncryptionKeys = new ArrayList<ReEncryptionKey>();
+        for(int i = 1; i <= N; i++) {
+            String hostname = "osre-holder_" + String.valueOf(i);
+            SocketClient socketClientToHolder = new SocketClient(hostname, port);
+            socketClientToHolder.connectAndSend(new byte[]{1});
+
+            IntegerPolynomial blindedReEncKey = IntegerPolynomial.fromBinary(socketServer.acceptAndReceive(), params.N, params.q);
+            logger.info("BlindedReEncKey received from holder");
+
+            reEncryptionKeys.add(new ReEncryptionKey(ntruReEncrypt.extractBlinding(r, blindedReEncKey).coeffs, params.q));
+        }
+
+        // OSRE
+        OSRE osre = new OSRE(encryptedMessage, N, N-1, prime, paramSpecs);
+        List<BigInteger> coefficients = osre.sampleCoefficients();
+        for(int i = 1; i <= N; i++) {
+            IntegerPolynomial encryptedPartialShare = osre.encryptPartialShare(i, coefficients, devicePublicKey);
+            IntegerPolynomial reEncryptedPartialShare = ntruReEncrypt.reEncrypt(reEncryptionKeys.get(i-1), encryptedPartialShare, SecureRandom.getSeed(64));
+
+            // Send share to holder i
+            String hostname = "osre-holder_" + String.valueOf(i);
+            SocketClient socketClientToHolder = new SocketClient(hostname, port);
+            socketClientToHolder.connectAndSend(reEncryptedPartialShare.toBinary(params.q));
+            logger.info("Encrypted share sent to holder " + String.valueOf(i));
+        }
 
         //////////////////////////////////////
         /*

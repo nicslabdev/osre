@@ -40,16 +40,21 @@ public class MainOSREOwner {
         socketClientToDevice.connectAndSend(deviceKeyPair.getPublic().getEncoded());
         logger.info("Public key sent to the device");
 
-        // Generate blinded secret key
+        // Generate blinded secret key and send to holders
         IntegerPolynomial r = ntruReEncrypt.sampleBlinding(sRNG);
         IntegerPolynomial blindedKeyOwner = ntruReEncrypt.blindPrivateKey(r, deviceKeyPair.getPrivate());
 
         for(int i = 1; i <= N; i++) {
             String host = "osre-holder_" + String.valueOf(i);
-            SocketClient socketClientToProxy = new SocketClient(host, port);
-            socketClientToProxy.connectAndSend(blindedKeyOwner.toBinary(params.q));
+            SocketClient socketClientToHolder = new SocketClient(host, port);
+            socketClientToHolder.connectAndSend(blindedKeyOwner.toBinary(params.q));
             logger.info("Blinded key sent to holder " + String.valueOf(i));
         }
+
+        // Send blinding r to the proxy
+        SocketClient socketClientToProxy = new SocketClient("osre-proxy", port);
+        socketClientToProxy.connectAndSend(r.toBinary(params.q));
+        logger.info("Blinded factor r sent to proxy");
 
     }
 

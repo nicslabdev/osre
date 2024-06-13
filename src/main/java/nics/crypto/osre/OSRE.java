@@ -86,7 +86,7 @@ public class OSRE {
      * @param index     The point where the polynomial is evaluated for party P_index
      * @return          The partial evaluation of the polynomial in the given index
      */
-    public BigInteger computePartialPoly(int index, List<BigInteger> coefficients) {
+    private BigInteger computePartialPoly(int index, List<BigInteger> coefficients) {
 
         BigInteger result = new BigInteger("0");
 
