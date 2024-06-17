@@ -23,4 +23,5 @@ COPY --from=builder /app/target/osre-1.0.1.jar /app
 COPY --from=builder /app/resources/ntru-1.2.jar /app/resources/ntru-1.2.jar
 COPY --from=builder /app/resources/ntrureencrypt-1.0.1.jar /app/resources/ntrureencrypt-1.0.1.jar
 
-ENTRYPOINT ["java", "-cp", "/app/resources/ntru-1.2.jar:/app/resources/ntrureencrypt-1.0.1.jar:/app/osre-1.0.1.jar", "nics.crypto.osre.MainOSREHolder", "3", "8080"]
+ENTRYPOINT ["java", "-cp", "/app/resources/ntru-1.2.jar:/app/resources/ntrureencrypt-1.0.1.jar:/app/osre-1.0.1.jar", "nics.crypto.osre.MainOSREHolder", "30", "55555"]
+CMD [""]

@@ -2,33 +2,34 @@
 
 # Function to configure docker files
 configure_docker() {
-    # Device
-    cat docker/Dockerfile-base.txt > docker/Dockerfile.device
-    cat <<EOL >> docker/Dockerfile.device
-
-
-ENTRYPOINT ["java", "-cp", "/app/resources/ntru-1.2.jar:/app/resources/ntrureencrypt-1.0.1.jar:/app/osre-1.0.1.jar", "nics.crypto.osre.MainOSREDevice", "$N", "8080"]
-EOL
     # Owner
     cat docker/Dockerfile-base.txt > docker/Dockerfile.owner
     cat <<EOL >> docker/Dockerfile.owner
 
 
-ENTRYPOINT ["java", "-cp", "/app/resources/ntru-1.2.jar:/app/resources/ntrureencrypt-1.0.1.jar:/app/osre-1.0.1.jar", "nics.crypto.osre.MainOSREOwner", "$N", "8080"]
+ENTRYPOINT ["java", "-cp", "/app/resources/ntru-1.2.jar:/app/resources/ntrureencrypt-1.0.1.jar:/app/osre-1.0.1.jar", "nics.crypto.osre.MainOSREOwner", "$N", "$P", "172.28.0.2"]
+EOL
+    # Device
+    cat docker/Dockerfile-base.txt > docker/Dockerfile.device
+    cat <<EOL >> docker/Dockerfile.device
+
+
+ENTRYPOINT ["java", "-cp", "/app/resources/ntru-1.2.jar:/app/resources/ntrureencrypt-1.0.1.jar:/app/osre-1.0.1.jar", "nics.crypto.osre.MainOSREDevice", "$N", "$P", "172.28.0.3"]
 EOL
     # Proxy
     cat docker/Dockerfile-base.txt > docker/Dockerfile.proxy
     cat <<EOL >> docker/Dockerfile.proxy
 
 
-ENTRYPOINT ["java", "-cp", "/app/resources/ntru-1.2.jar:/app/resources/ntrureencrypt-1.0.1.jar:/app/osre-1.0.1.jar", "nics.crypto.osre.MainOSREProxy", "$N", "8080"]
+ENTRYPOINT ["java", "-cp", "/app/resources/ntru-1.2.jar:/app/resources/ntrureencrypt-1.0.1.jar:/app/osre-1.0.1.jar", "nics.crypto.osre.MainOSREProxy", "$N", "$P", "172.28.0.4"]
 EOL
     # Holder
     cat docker/Dockerfile-base.txt > docker/Dockerfile.holder
     cat <<EOL >> docker/Dockerfile.holder
 
 
-ENTRYPOINT ["java", "-cp", "/app/resources/ntru-1.2.jar:/app/resources/ntrureencrypt-1.0.1.jar:/app/osre-1.0.1.jar", "nics.crypto.osre.MainOSREHolder", "$N", "8080"]
+ENTRYPOINT ["java", "-cp", "/app/resources/ntru-1.2.jar:/app/resources/ntrureencrypt-1.0.1.jar:/app/osre-1.0.1.jar", "nics.crypto.osre.MainOSREHolder", "$N", "$P"]
+CMD [""]
 EOL
 
 echo Dockerfiles correctly generated.
@@ -37,6 +38,7 @@ echo Dockerfiles correctly generated.
 # Function to configure docker-compose file
 configure_compose() {
 REPLICAS=$N
+PORT=$P
 
 # Validate the number of replicas is a positive integer
 if ! [[ "$REPLICAS" =~ ^[0-9]+$ ]] || [ "$REPLICAS" -le 0 ]; then
@@ -55,11 +57,12 @@ services:
       context: ..
       dockerfile: docker/Dockerfile.owner
     networks:
-      - mynetwork
+      osre_network:
+        ipv4_address: 172.28.0.2
     depends_on:
       - osre-device
     ports:
-      - "8080"
+      - "$PORT"
 
   osre-device:
     image: osre-device
@@ -67,9 +70,10 @@ services:
       context: ..
       dockerfile: docker/Dockerfile.device
     networks:
-      - mynetwork
+      osre_network:
+        ipv4_address: 172.28.0.3
     ports:
-      - "8080"
+      - "$PORT"
 
   osre-proxy:
     image: osre-proxy
@@ -77,15 +81,18 @@ services:
       context: ..
       dockerfile: docker/Dockerfile.proxy
     networks:
-      - mynetwork
+      osre_network:
+        ipv4_address: 172.28.0.4
     ports:
-      - "8080"
+      - "$PORT"
 
 EOL
 
 # Loop to create each service
 for ((i=1; i<=REPLICAS; i++))
 do
+IP_TAIL=$((10 + i))
+IP="172.28.0.$IP_TAIL"
 cat <<EOL >> ./docker/docker-compose.yml
   osre-holder_$i:
     image: osre-holder
@@ -94,9 +101,11 @@ cat <<EOL >> ./docker/docker-compose.yml
       context: ..
       dockerfile: docker/Dockerfile.holder
     networks:
-      - mynetwork
+      osre_network:
+        ipv4_address: $IP
     ports:
-      - "8080"
+      - "$PORT"
+    command: ["$IP"]
 
 EOL
 done
@@ -104,8 +113,13 @@ done
 # Add the network definition
 cat <<EOL >> ./docker/docker-compose.yml
 networks:
-  mynetwork:
+  osre_network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/24
+    #name: osre_network
+    #external: true
 EOL
 
 echo "docker-compose.yml generated successfully with $REPLICAS replicas."
@@ -137,21 +151,22 @@ build_files() {
 # Function to execute containers
 execute_containers() {
     echo "Executing containers with N=$1..."
-    docker-compose -f docker/docker-compose.yml up --build
+    docker compose -f docker/docker-compose.yml up --build
 }
 
 # Check if the correct number of arguments are provided
 if [ "$#" -lt 2 ]; then
-    echo "Usage: $0 <number_of_replicas> <options>"
+    echo "Usage: $0 <number_of_replicas> <port> <options>"
     echo "Options: -c (clear), -f (configure), -b (build), -e (execute)"
     exit 1
 fi
 
 # Assign the first argument to N
 N=$1
+P=$2
 
 # Shift the arguments to parse options
-shift
+shift 2
 
 # Loop through options and execute the corresponding tasks in the specified order
 while getopts "cfbe" opt; do
@@ -170,7 +185,7 @@ while getopts "cfbe" opt; do
             ;;
         *)
             echo "Invalid option: -$OPTARG" >&2
-            echo "Usage: $0 <number_of_replicas> <options>"
+            echo "Usage: $0 <number_of_replicas> <port> <options>"
             echo "Options: -c (clear), -f (configure), -b (build), -e (execute)"
             exit 1
             ;;

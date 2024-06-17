@@ -23,8 +23,8 @@ public class MainOSREHolder {
 
     public static void main(String[] args) throws Exception {
 
-        if(args.length < 2) {
-            throw new Exception("Less than 2 arguments provided. The correct format is (N, port)");
+        if(args.length < 3) {
+            throw new Exception("Less than 3 arguments provided. The correct format is (N, port, address)");
         }
 
         logger.info("Starting MainOSREHolder...");
@@ -32,6 +32,8 @@ public class MainOSREHolder {
         // Init variables
         int N = Integer.parseInt(args[0]);
         int port = Integer.parseInt(args[1]);
+        String ipAddress = args[2];
+        //SocketServer socketServer = new SocketServer(port, ipAddress);
         SocketServer socketServer = new SocketServer(port);
         SecureRandom sRNG = new SecureRandom();
         int numBits = 128;

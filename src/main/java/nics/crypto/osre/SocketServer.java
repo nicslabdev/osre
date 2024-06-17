@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
@@ -25,6 +26,16 @@ public class SocketServer {
 
         logger.info("Init new SocketServer in port " + String.valueOf(port));
 
+    }
+    
+    public SocketServer(int port, String address) throws IOException {
+    
+    	this.port = port;
+    	InetAddress bindAddr = InetAddress.getByName(address);
+    	this.serverSocket = new ServerSocket(port, 50, bindAddr);
+    	
+    	logger.info("Init new SocketServer in port " + String.valueOf(port) + " and ip " + address);
+    
     }
 
     public byte[] acceptAndReceive() throws IOException {
