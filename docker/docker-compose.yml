@@ -9,10 +9,12 @@ services:
     networks:
       osre_network:
         ipv4_address: 172.28.0.2
-    depends_on:
-      - osre-device
     ports:
       - "55555"
+    volumes:
+      - log-data:/logs
+    depends_on:
+      - osre-device
 
   osre-device:
     image: osre-device
@@ -24,6 +26,10 @@ services:
         ipv4_address: 172.28.0.3
     ports:
       - "55555"
+    volumes:
+      - log-data:/logs
+    depends_on:
+      - osre-proxy
 
   osre-proxy:
     image: osre-proxy
@@ -35,7 +41,15 @@ services:
         ipv4_address: 172.28.0.4
     ports:
       - "55555"
-
+    volumes:
+      - log-data:/logs
+    depends_on:
+      - osre-holder_1
+      - osre-holder_2
+      - osre-holder_3
+      - osre-holder_4
+      - osre-holder_5
+  
   osre-holder_1:
     image: osre-holder
     container_name: osre-holder_1
@@ -47,8 +61,11 @@ services:
         ipv4_address: 172.28.0.11
     ports:
       - "55555"
+    volumes:
+      - log-data:/logs
     command: ["172.28.0.11"]
 
+  
   osre-holder_2:
     image: osre-holder
     container_name: osre-holder_2
@@ -60,8 +77,11 @@ services:
         ipv4_address: 172.28.0.12
     ports:
       - "55555"
+    volumes:
+      - log-data:/logs
     command: ["172.28.0.12"]
 
+  
   osre-holder_3:
     image: osre-holder
     container_name: osre-holder_3
@@ -73,8 +93,11 @@ services:
         ipv4_address: 172.28.0.13
     ports:
       - "55555"
+    volumes:
+      - log-data:/logs
     command: ["172.28.0.13"]
 
+  
   osre-holder_4:
     image: osre-holder
     container_name: osre-holder_4
@@ -86,8 +109,11 @@ services:
         ipv4_address: 172.28.0.14
     ports:
       - "55555"
+    volumes:
+      - log-data:/logs
     command: ["172.28.0.14"]
 
+  
   osre-holder_5:
     image: osre-holder
     container_name: osre-holder_5
@@ -99,332 +125,9 @@ services:
         ipv4_address: 172.28.0.15
     ports:
       - "55555"
+    volumes:
+      - log-data:/logs
     command: ["172.28.0.15"]
-
-  osre-holder_6:
-    image: osre-holder
-    container_name: osre-holder_6
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile.holder
-    networks:
-      osre_network:
-        ipv4_address: 172.28.0.16
-    ports:
-      - "55555"
-    command: ["172.28.0.16"]
-
-  osre-holder_7:
-    image: osre-holder
-    container_name: osre-holder_7
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile.holder
-    networks:
-      osre_network:
-        ipv4_address: 172.28.0.17
-    ports:
-      - "55555"
-    command: ["172.28.0.17"]
-
-  osre-holder_8:
-    image: osre-holder
-    container_name: osre-holder_8
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile.holder
-    networks:
-      osre_network:
-        ipv4_address: 172.28.0.18
-    ports:
-      - "55555"
-    command: ["172.28.0.18"]
-
-  osre-holder_9:
-    image: osre-holder
-    container_name: osre-holder_9
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile.holder
-    networks:
-      osre_network:
-        ipv4_address: 172.28.0.19
-    ports:
-      - "55555"
-    command: ["172.28.0.19"]
-
-  osre-holder_10:
-    image: osre-holder
-    container_name: osre-holder_10
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile.holder
-    networks:
-      osre_network:
-        ipv4_address: 172.28.0.20
-    ports:
-      - "55555"
-    command: ["172.28.0.20"]
-
-  osre-holder_11:
-    image: osre-holder
-    container_name: osre-holder_11
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile.holder
-    networks:
-      osre_network:
-        ipv4_address: 172.28.0.21
-    ports:
-      - "55555"
-    command: ["172.28.0.21"]
-
-  osre-holder_12:
-    image: osre-holder
-    container_name: osre-holder_12
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile.holder
-    networks:
-      osre_network:
-        ipv4_address: 172.28.0.22
-    ports:
-      - "55555"
-    command: ["172.28.0.22"]
-
-  osre-holder_13:
-    image: osre-holder
-    container_name: osre-holder_13
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile.holder
-    networks:
-      osre_network:
-        ipv4_address: 172.28.0.23
-    ports:
-      - "55555"
-    command: ["172.28.0.23"]
-
-  osre-holder_14:
-    image: osre-holder
-    container_name: osre-holder_14
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile.holder
-    networks:
-      osre_network:
-        ipv4_address: 172.28.0.24
-    ports:
-      - "55555"
-    command: ["172.28.0.24"]
-
-  osre-holder_15:
-    image: osre-holder
-    container_name: osre-holder_15
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile.holder
-    networks:
-      osre_network:
-        ipv4_address: 172.28.0.25
-    ports:
-      - "55555"
-    command: ["172.28.0.25"]
-
-  osre-holder_16:
-    image: osre-holder
-    container_name: osre-holder_16
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile.holder
-    networks:
-      osre_network:
-        ipv4_address: 172.28.0.26
-    ports:
-      - "55555"
-    command: ["172.28.0.26"]
-
-  osre-holder_17:
-    image: osre-holder
-    container_name: osre-holder_17
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile.holder
-    networks:
-      osre_network:
-        ipv4_address: 172.28.0.27
-    ports:
-      - "55555"
-    command: ["172.28.0.27"]
-
-  osre-holder_18:
-    image: osre-holder
-    container_name: osre-holder_18
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile.holder
-    networks:
-      osre_network:
-        ipv4_address: 172.28.0.28
-    ports:
-      - "55555"
-    command: ["172.28.0.28"]
-
-  osre-holder_19:
-    image: osre-holder
-    container_name: osre-holder_19
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile.holder
-    networks:
-      osre_network:
-        ipv4_address: 172.28.0.29
-    ports:
-      - "55555"
-    command: ["172.28.0.29"]
-
-  osre-holder_20:
-    image: osre-holder
-    container_name: osre-holder_20
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile.holder
-    networks:
-      osre_network:
-        ipv4_address: 172.28.0.30
-    ports:
-      - "55555"
-    command: ["172.28.0.30"]
-
-  osre-holder_21:
-    image: osre-holder
-    container_name: osre-holder_21
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile.holder
-    networks:
-      osre_network:
-        ipv4_address: 172.28.0.31
-    ports:
-      - "55555"
-    command: ["172.28.0.31"]
-
-  osre-holder_22:
-    image: osre-holder
-    container_name: osre-holder_22
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile.holder
-    networks:
-      osre_network:
-        ipv4_address: 172.28.0.32
-    ports:
-      - "55555"
-    command: ["172.28.0.32"]
-
-  osre-holder_23:
-    image: osre-holder
-    container_name: osre-holder_23
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile.holder
-    networks:
-      osre_network:
-        ipv4_address: 172.28.0.33
-    ports:
-      - "55555"
-    command: ["172.28.0.33"]
-
-  osre-holder_24:
-    image: osre-holder
-    container_name: osre-holder_24
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile.holder
-    networks:
-      osre_network:
-        ipv4_address: 172.28.0.34
-    ports:
-      - "55555"
-    command: ["172.28.0.34"]
-
-  osre-holder_25:
-    image: osre-holder
-    container_name: osre-holder_25
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile.holder
-    networks:
-      osre_network:
-        ipv4_address: 172.28.0.35
-    ports:
-      - "55555"
-    command: ["172.28.0.35"]
-
-  osre-holder_26:
-    image: osre-holder
-    container_name: osre-holder_26
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile.holder
-    networks:
-      osre_network:
-        ipv4_address: 172.28.0.36
-    ports:
-      - "55555"
-    command: ["172.28.0.36"]
-
-  osre-holder_27:
-    image: osre-holder
-    container_name: osre-holder_27
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile.holder
-    networks:
-      osre_network:
-        ipv4_address: 172.28.0.37
-    ports:
-      - "55555"
-    command: ["172.28.0.37"]
-
-  osre-holder_28:
-    image: osre-holder
-    container_name: osre-holder_28
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile.holder
-    networks:
-      osre_network:
-        ipv4_address: 172.28.0.38
-    ports:
-      - "55555"
-    command: ["172.28.0.38"]
-
-  osre-holder_29:
-    image: osre-holder
-    container_name: osre-holder_29
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile.holder
-    networks:
-      osre_network:
-        ipv4_address: 172.28.0.39
-    ports:
-      - "55555"
-    command: ["172.28.0.39"]
-
-  osre-holder_30:
-    image: osre-holder
-    container_name: osre-holder_30
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile.holder
-    networks:
-      osre_network:
-        ipv4_address: 172.28.0.40
-    ports:
-      - "55555"
-    command: ["172.28.0.40"]
 
 networks:
   osre_network:
@@ -434,3 +137,7 @@ networks:
         - subnet: 172.28.0.0/24
     #name: osre_network
     #external: true
+    
+volumes:
+  log-data:
+    external: true

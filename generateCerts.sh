@@ -24,8 +24,8 @@ KEY_PASSWORD="password"
 
 # Generate N keystores
 for ((i = 1; i <= N; i++)); do
-    DNAME="CN=holder$i, OU=MyUnit, O=MyOrg, L=MyCity, ST=MyState, C=US"
-    KEYSTORE_NAME="holder$i.keystore"
+    DNAME="CN=holder_$i, OU=MyUnit, O=MyOrg, L=MyCity, ST=MyState, C=US"
+    KEYSTORE_NAME="holder_$i.keystore"
 
     keytool -genkeypair \
             -alias holder$i \
@@ -41,11 +41,11 @@ for ((i = 1; i <= N; i++)); do
             -alias holder$i \
             -keystore "certs/$KEYSTORE_NAME" \
             -storepass "$KEY_PASSWORD" \
-            -file "certs/holder$i.crt"
+            -file "certs/holder_$i.crt"
 
     keytool -import \
             -alias holder$i \
-            -file "certs/holder$i.crt" \
+            -file "certs/holder_$i.crt" \
             -keystore certs/client.truststore \
             -storepass "$KEYSTORE_PASSWORD" \
             -noprompt

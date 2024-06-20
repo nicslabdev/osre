@@ -1,0 +1,109 @@
+version: '3.8'
+
+services:
+  tls-device:
+    image: tls-device
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.tls-device
+    networks:
+      osre_network:
+        ipv4_address: 172.28.0.2
+    ports:
+      - "55555"
+    volumes:
+      - log-data:/logs
+    depends_on:
+      - tls-holder_1
+      - tls-holder_2
+      - tls-holder_3
+      - tls-holder_4
+      - tls-holder_5
+  
+  tls-holder_1:
+    image: tls-holder
+    container_name: tls-holder_1
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.tls-holder
+    networks:
+      osre_network:
+        ipv4_address: 172.28.0.11
+    ports:
+      - "55555"
+    volumes:
+      - log-data:/logs
+    command: ["172.28.0.11", "1"]
+  
+  tls-holder_2:
+    image: tls-holder
+    container_name: tls-holder_2
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.tls-holder
+    networks:
+      osre_network:
+        ipv4_address: 172.28.0.12
+    ports:
+      - "55555"
+    volumes:
+      - log-data:/logs
+    command: ["172.28.0.12", "2"]
+  
+  tls-holder_3:
+    image: tls-holder
+    container_name: tls-holder_3
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.tls-holder
+    networks:
+      osre_network:
+        ipv4_address: 172.28.0.13
+    ports:
+      - "55555"
+    volumes:
+      - log-data:/logs
+    command: ["172.28.0.13", "3"]
+  
+  tls-holder_4:
+    image: tls-holder
+    container_name: tls-holder_4
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.tls-holder
+    networks:
+      osre_network:
+        ipv4_address: 172.28.0.14
+    ports:
+      - "55555"
+    volumes:
+      - log-data:/logs
+    command: ["172.28.0.14", "4"]
+  
+  tls-holder_5:
+    image: tls-holder
+    container_name: tls-holder_5
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.tls-holder
+    networks:
+      osre_network:
+        ipv4_address: 172.28.0.15
+    ports:
+      - "55555"
+    volumes:
+      - log-data:/logs
+    command: ["172.28.0.15", "5"]
+
+networks:
+  osre_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/24
+    #name: osre_network
+    #external: true
+    
+volumes:
+  log-data:
+    external: true
